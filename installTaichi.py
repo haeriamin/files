@@ -101,7 +101,7 @@ def get_path_separator():
     return ':'
 
 def test_installation():
-  return subprocess.run([get_python_executable(), "-c", "import taichi as tc"]).returncode == 0
+  return run([get_python_executable(), "-c", "import taichi as tc"]).returncode == 0
 
 
 # (Stateful) Installer class
@@ -141,7 +141,7 @@ class Installer:
         execute_command('git clone https://github.com/yuanming-hu/taichi_runtime external/lib -b {} --depth 1'.format(get_os_name()))
     execute_command("git submodule update --init --recursive")
 
-  def run(self):
+  def selfrun(self):
     assert get_os_name() in ['linux', 'osx', 'win'], \
       'Platform {} is not currently supported by this script. Please install manually.'.format(get_os_name())
     if len(sys.argv) > 1:
@@ -164,14 +164,14 @@ class Installer:
       print(e)
       print('Installing pip3')
       execute_command('wget https://bootstrap.pypa.io/get-pip.py')
-      subprocess.run([get_python_executable(), "get-pip.py", "--user"])
+      run([get_python_executable(), "get-pip.py", "--user"])
       execute_command('rm get-pip.py')
 
-    subprocess.run([get_python_executable(), "-m", "pip", "install", "--user",
+    run([get_python_executable(), "-m", "pip", "install", "--user",
                     "colorama", "numpy", "Pillow", "flask", "scipy", "pybind11",
                     "flask_cors", "GitPython", "yapf", "distro", "requests", "PyQt5"])
     print("importing numpy test:")
-    ret = subprocess.run([get_python_executable(), "-c", "import numpy as np"])
+    ret = run([get_python_executable(), "-c", "import numpy as np"])
     print("ret:", ret)
 
     execute_command('cmake --version')
@@ -203,7 +203,7 @@ class Installer:
       # else:
       #   print("Unsupported Linux distribution.")
 
-    subprocess.run([get_python_executable(), "-m", "pip", "install", "--user", "psutil"])
+    run([get_python_executable(), "-m", "pip", "install", "--user", "psutil"])
 
     self.detect_or_setup_repo()
 
@@ -237,4 +237,4 @@ class Installer:
 
 if __name__ == '__main__':
   installer = Installer()
-  installer.run()
+  installer.selfrun()
