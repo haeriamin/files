@@ -4,7 +4,7 @@ import os
 import sys
 import platform
 #import argparse
-import subprocess
+from subprocess import run
 from os import environ
 import platform
 
