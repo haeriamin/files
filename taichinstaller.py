@@ -230,7 +230,7 @@ class Installer:
     else:
       print('  Error: installation failed.')
       exit(-1)
-    execute_command('source /.bashrc')
+    execute_command('source ~/.bashrc')
 
 if __name__ == '__main__':
   installer = Installer()
