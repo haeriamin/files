@@ -4,8 +4,7 @@ import os
 import sys
 import platform
 #import argparse
-from subprocess import run
-from os import environ
+import subprocess.run
 import platform
 
 print(platform.architecture())
@@ -25,7 +24,7 @@ def get_python_executable():
   return sys.executable.replace('\\','/')
 
 def get_shell_name():
-  return environ['SHELL'].split('/')[-1]
+  return os.environ['SHELL'].split('/')[-1]
 
 def get_shell_rc_name():
   shell = get_shell_name()
@@ -101,7 +100,7 @@ def get_path_separator():
     return ':'
 
 def test_installation():
-  return run([get_python_executable(), "-c", "import taichi as tc"]).returncode == 0
+  return subprocess.run([get_python_executable(), "-c", "import taichi as tc"]).returncode == 0
 
 
 # (Stateful) Installer class
@@ -164,14 +163,14 @@ class Installer:
       print(e)
       print('Installing pip3')
       execute_command('wget https://bootstrap.pypa.io/get-pip.py')
-      run([get_python_executable(), "get-pip.py", "--user"])
+      subprocess.run([get_python_executable(), "get-pip.py", "--user"])
       execute_command('rm get-pip.py')
 
-    run([get_python_executable(), "-m", "pip", "install", "--user",
+    subprocess.run([get_python_executable(), "-m", "pip", "install", "--user",
                     "colorama", "numpy", "Pillow", "flask", "scipy", "pybind11",
                     "flask_cors", "GitPython", "yapf", "distro", "requests", "PyQt5"])
     print("importing numpy test:")
-    ret = run([get_python_executable(), "-c", "import numpy as np"])
+    ret = subprocess.run([get_python_executable(), "-c", "import numpy as np"])
     print("ret:", ret)
 
     execute_command('cmake --version')
@@ -203,7 +202,7 @@ class Installer:
       # else:
       #   print("Unsupported Linux distribution.")
 
-    run([get_python_executable(), "-m", "pip", "install", "--user", "psutil"])
+    subprocess.run([get_python_executable(), "-m", "pip", "install", "--user", "psutil"])
 
     self.detect_or_setup_repo()
 
