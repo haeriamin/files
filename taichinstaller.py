@@ -4,7 +4,7 @@ import os
 import sys
 import platform
 import subprocess.run
-import platform
+
 #import argparse
 
 print(platform.architecture())
