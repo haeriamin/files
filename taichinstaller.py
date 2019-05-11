@@ -5,8 +5,6 @@ import sys
 import platform
 import subprocess.run
 
-#import argparse
-
 print(platform.architecture())
 build_type = 'default'
 
