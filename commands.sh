@@ -8,19 +8,29 @@ singularity exec ubuntu.simg /bin/bash python install.py
 # install taichi & mpm:
 wget https://github.com/haeriamin/files/blob/master/taichinstaller.py
 python3 taichinstaller.py # customized
-add-it-to-bashrc: export PATH="/private/k/kskoniec/a_hae/.local/bin:$PATH"
+# add-it-to-bashrc: export PATH="/private/k/kskoniec/a_hae/.local/bin:$PATH"
 modify-main.py: 'mpm': 'https://github.com/haeriamin/mpm',
 ti build
 ti install mpm
 
 # post processing:
 ffmpeg -framerate 50 -i untitled%d.jpg -c:v libx264 -profile:v high -crf 18 -pix_fmt yuv420p output.mp4
+ffmpeg -framerate 50 -start_number 15 -i untitled%d.jpg -c:v libx264 -profile:v high -crf 18 -pix_fmt yuv420p output.mp4
+
+# split zip file
+zip -s 15000m mg_old mg_.35_.3_40.zip
+
+# Houdini
+press D to change the settings
+add attribute wringle
+add color
+add visualize
 
 # ssh:
 rsync -v -e ssh ~/Desktop a_hae@speed-submit.encs.concordia.ca:/private/k/kskoniec/a_hae/install.py
 rsync -v -e ssh ~/Desktop/install.py a_hae@speed-submit.encs.concordia.ca:/private/k/kskoniec/a_hae
 rsync -avzhe ssh /Volumes/Z/taichi a_hae@speed-submit.encs.concordia.ca:/private/k/kskoniec/a_hae/taichi
-rsync -avzhe ssh a_hae@speed-submit.encs.concordia.ca:/private/k/kskoniec/a_hae/taichi/outputs/mpm/tcFlow /Volumes/X/
+rsync -avzhe ssh a_hae@speed-submit.encs.concordia.ca:/private/k/kskoniec/a_hae/taichi/outputs/mpm/tcFlow/files.tar.gz /Volumes/X/
 to zip on mac: tar cvfz mpmCode.tar.gz mpmCode
 to unzip on server: tar -zxvf modules-4.2.3.tar.gz
 to delete on server: rm -f modules-4.2.3.tar.gz // -r for dirs
@@ -49,6 +59,7 @@ ssh a_hae@speed-submit.encs.concordia.ca
 cd /private/k/kskoniec/a_hae
 source /local/pkg/uge-8.6.3/root/default/common/settings.csh
 for-interactive-job-session: qlogin -N MPM -pe smp 32 -l h_vmem=500G
+cd /private/k/kskoniec/a_hae
 for-batch-job-session: qsub ./tcsh.sh
 singularity shell -H /private/k/kskoniec/a_hae ubuntu.simg
 source ~/.bashrc
@@ -93,6 +104,7 @@ export TAICHI_REPO_DIR=/private/k/kskoniec/a_hae/taichi
 export PYTHONPATH=$TAICHI_REPO_DIR/python/:$PYTHONPATH
 export PATH=$TAICHI_REPO_DIR/bin/:$PATH
 
+#-------------------------------------------------------------------------------
 # spec comparison
 local:  Intel(R) Core(TM)  i7 6700 CPU @ 3.40GHz  4-core
 server: Intel(R) Xeon(R) Gold 6130 CPU @ 2.10GHz 16-core
@@ -102,17 +114,20 @@ GFLOPS = 217.6
        = 665.6
 GFLOPS_Ratio = 665.6/217.6 = 3.1
 RunTime_Ratio = 24/20 = 1.2
-
-# Threading Building Blocks (TBB)
-# time complexity and run time comparison
+# Threading Building Blocks (TBB): time complexity and run time comparison
 frame--mode---loc8--serv32--
 1100  -b208B  24h   20h
 1100  -c256B  30h   22h
 
-# TODO:
-0.conference-pres
-1.non-sticky-bc
-2.nonlocal-constitutive-model
-3.fix-output
-4.install-taichi-on-container
-5.JapanEmail
+#-------------------------------------------------------------------------------
+# short-term TODOs:
+* results at different levels (Thu)
+# long-term TODOs: (?)
+* Journal-paper
+* Ask Teran&Jiang about hardening: dilation not friction angle in alpha
+* Constitutive models
+    a. Size (& shape) effect to study flow segragation -> coupled-unsteady-nonlocal
+    b. Other models (pres-summary, review-paper)
+* Accuracy enhancement (grid-update, polyPIC)
+* Wheel-on-soil -> rigidbody-dynamics
+* GPU support
