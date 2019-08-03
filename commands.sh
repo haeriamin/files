@@ -5,6 +5,21 @@ singularity shell -H /private/k/kskoniec/a_hae ubuntu.simg
 singularity exec -H /private/k/kskoniec/a_hae ubuntu.simg /bin/bash
 singularity exec ubuntu.simg /bin/bash python install.py
 
+# Singularity + MPM:
+cd ~
+wget https://github.com/haeriamin/files/blob/master/taichi.zip
+pip install subprocess.run
+cd ~
+wget https://github.com/haeriamin/files/blob/master/taichinstaller.py
+python3 taichinstaller.py
+wget https://github.com/haeriamin/files/blob/master/main.py
+yes | cp -rf ~/main.py ~/taichi/python/taichi
+rm -fr main.py
+cd ~/taichi/python/taichi
+source ~/.bashrc
+ti install mpm
+source ~/.bashrc
+
 # install taichi & mpm:
 wget https://github.com/haeriamin/files/blob/master/taichinstaller.py
 python3 taichinstaller.py # customized
@@ -121,13 +136,18 @@ frame--mode---loc8--serv32--
 
 #-------------------------------------------------------------------------------
 # short-term TODOs:
-* results at different levels (Thu)
-# long-term TODOs: (?)
 * Journal-paper
+* Review all constitutive models
+* Code coupled-unsteady-nonlocal for size effect
+* Results at different levels
+* Model triaxial test by MPM, like Sture
+
+# long-term TODOs: (?)
+* Sticky outer bc in MPM after adding nonlocal (like FEM)
+* Code hardening from ref paper after adding nonlocal
 * Ask Teran&Jiang about hardening: dilation not friction angle in alpha
-* Constitutive models
-    a. Size (& shape) effect to study flow segragation -> coupled-unsteady-nonlocal
-    b. Other models (pres-summary, review-paper)
+* Kamrin scaling law vs Chris experiments
 * Accuracy enhancement (grid-update, polyPIC)
-* Wheel-on-soil -> rigidbody-dynamics
+* Wheel-on-soil: rigidbody-dynamics
+* Surface large deformation in reduced gravity
 * GPU support
