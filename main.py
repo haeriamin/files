@@ -6,7 +6,7 @@ from taichi.tools.video import make_video, interpolate_frames
 from taichi.core.util import get_projects, activate_package, deactivate_package
 
 packages = {
-  'mpm': 'https://github.com/haeriamin/mpm',
+  'mpm': 'https://github.com/haeriamin/MPM-NGF',
   'wushi': 'https://github.com/yuanming-hu/taichi_wushi'
 }
 
