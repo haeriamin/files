@@ -1,16 +1,45 @@
+## PySpark --------------------------------------------------------------------
+# Setup
+Set a python venv
+pip install pyspark 
+# Run
+spark-submit file_name.py 
+
+
+### UChicago ---------------------------------------------------------------
+ssh -Y haeri@midway2.rcc.uchicago.edu
+scp -r /Volumes/X/Postdoc/Code/LC_Code_0 haeri@midway2.rcc.uchicago.edu:  # To copy
+
+## MPI C Code
+# For running
+module load openmpi/2.0.1
+module load intel/16.0
+make -f Makefile.txt
+mpirun lblc
+# For postprocessing
+module load mkl/2017
+make -f Makefile
+# Only on my computer:
+cd Volumes/X/Postdoc/Code/LC-Code
+export PATH=$PATH:$HOME/opt/usr/local/bin
+export PATH=$PATH:$HOME/opt/usr/local/bin/mpicc
+export TMPDIR=~/tmp
+
+## ML Code
+install partio from github
+python partio_generator
+Houdini
+# 2x slower (dt=1e-4, t_max=10sec, freq=100Hz)
+ffmpeg -framerate 50 -i untitled%d.jpg -c:v libx264 -profile:v high -crf 18 -pix_fmt yuv420p output.mp4
+
+
+## PhD Thesis Concordia -------------------------------------------------------
 # First Priority
 * Model wheel-soil in MPM
 * Generate training datasets via MPM-NGF
 * Use graph-based dl to model granular flows and PCA to reduce problem dimension for real-time applications
 * Add transient feature to MPM-NGF code (Capturing transient granular rheology with extended fabric tensor relations)
 * Implement MPM-NGF as a plugin in Houdini (postdoc, better to be GPU-based)
-
-# Publication
-* J: Gravity paper
-* J: Nonlocal paper
-* J: Excavation paper
-* C: Accurate real-time simulation method for traction control of space exploration rovers wheels
-
 # Second Priority
 * Model triaxial test in MPM like Sture
 * Accuracy enhancement (grid-update, PolyPIC)
@@ -26,9 +55,85 @@
 * GPU support for MPM
 
 
-# Graph Neural Network ---------------------------------------------------------
+# My Website -------------------------------------------------------------------
+* Gatsby + Netlify + GoogleDomain + GitHub
+# To develop
+$ npm run develop
+$ npm run clean
+# To deploy
+$ EDIT
+$ COMMIT
+
+# EPS to PDF ------------------------------------------------------------------
+$ for i in *ps; do ps2pdf -DEPSCrop $i; done;
+
+# Run C++ ---------------------------------------------------------------------
+g++ -pipe -std=c++11 ./
+./a.out
+using namespace std;
+auto it = max_element(begin(v), end(v));
+sort(v.begin(), v.end());
+
+# Graph Neural Network --------------------------------------------------------
+# Setup (RTX 3080 and Cuda11)
+https://www.digitalocean.com/community/tutorials/how-to-install-anaconda-on-ubuntu-18-04-quickstart
+https://www.pugetsystems.com/labs/hpc/How-To-Install-TensorFlow-1-15-for-NVIDIA-RTX30-GPUs-without-docker-or-CUDA-install-2005/
+pip install dm-tree==0.1.5 dm-sonnet==1.36 graph-nets==1.1.0 sklearn==0.0 matplotlib==3.3.4 pandas==1.1.5
+sudo apt install ffmpeg
+conda activate tf1-nv
+
+# # Setup (not working with RTX 3080 and Cuda10.0)
+# Install Nvidia driver
+# https://www.tensorflow.org/install/source#gpu
+# https://docs.nvidia.com/datacenter/tesla/tesla-installation-notes/index.html#ubuntu-lts
+# https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#post-installation-actions
+
+
+# # Singularity (not working with RTX 3080)
+# https://sylabs.io/guides/3.0/user-guide/installation.html#install-on-linux
+# $ singularity exec -H /home/gpucomp/DeepGranularFlows --nv ../mytf.simg /bin/bash ./run_excavation.sh
+# $ singularity exec -H /home/gpucomp/DeepGranularFlows --nv ../mytf.simg /bin/bash ./run_sand.sh
+
+# # Docker (not working with RTX 3080)
+# https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04
+
+# Get image: $ docker pull ahaeri/docker-custom-tensorflow
+# Run: $ docker run -t -d ahaeri/docker-custom-tensorflow bash
+# Run interactively: $ docker run -it ahaeri/docker-custom-tensorflow bash
+
+# Show images: $ docker images
+# Show all containers: $ docker ps -a
+# Show running containers: $ docker ps
+# Stop container: $ docker stop 27456e4c7dd2
+# Delete containers: $ docker rm $(docker ps -a -q -f status=exited)
+
+# $ docker run --gpus all -it -w /docker-custom-tensorflow -v $PWD:/mnt -e HOST_PERMS="$(id -u):$(id -g)" ahaeri/docker-custom-tensorflow bash
+# $ docker run -it -w ~/ -v $PWD:/mnt -e HOST_PERMS="$(id -u):$(id -g)" ahaeri/docker-custom-tensorflow bash
+
+# $ docker exec -w $PWD:/DeepGranularFlows 27456e4c7dd2 /bin/bash ./DeepGranularFlows/run_excavation.sh
+# $ docker exec -it -w $PWD:/home/gpucomp/DeepGranularFlows -e HOST_PERMS="$(id -u):$(id -g)" 27456e4c7dd2 /bin/bash ./DeepGranularFlows/run_excavation.sh
+
+
+# On Concordia Speed
+ssh a_hae@speed-submit.encs.concordia.ca
+cd /private/k/kskoniec/a_hae
+source /local/pkg/uge-8.6.3/root/default/common/settings.csh
+qsub -q g.q ./tcsh_gpu.sh
+qsub -q g.q ./tcsh_gpu_test.sh
+qsub ./tcsh_cpu.sh
+qstat -f -u "*"
+qstat -j
+ssh speed-05 nvidia-smi
+du -msh a_hae
+qdel 
+rsync -avzhe ssh a_hae@speed-submit.encs.concordia.ca:/private/k/kskoniec/a_hae/deep_granular_flows/learning_to_simulate/models/Excavation /Volumes/X
+rsync -avzhe ssh a_hae@speed-submit.encs.concordia.ca:/private/k/kskoniec/a_hae/deep_granular_flows/learning_to_simulate/models/Sand /Volumes/X
+rsync -avzhe ssh a_hae@speed-submit.encs.concordia.ca:/private/k/kskoniec/a_hae/deep_granular_flows/learning_to_simulate/models/Sand /home/gpucomp
+rsync -avzhe ssh a_hae@speed-submit.encs.concordia.ca:/private/k/kskoniec/a_hae/deep_granular_flows/learning_to_simulate/rollouts/Excavation /Volumes/X
+rsync -avzhe ssh a_hae@speed-submit.encs.concordia.ca:/private/k/kskoniec/a_hae/deep_granular_flows/learning_to_simulate/rollouts/Sand /Volumes/X
+
 # Install dependencies:
-pip install -r requirements.txt
+# pip install -r requirements.txt
 mkdir -p ./learning_to_simulate/datasets
 mkdir -p ./learning_to_simulate/models
 mkdir -p ./learning_to_simulate/rollouts
@@ -36,31 +141,115 @@ mkdir -p ./learning_to_simulate/rollouts
 # Download dataset (e.g. Sand):
 bash ./learning_to_simulate/download_dataset.sh Sand ./learning_to_simulate/datasets
 
+# Tensorboard
+tensorboard --logdir="./learning_to_simulate/models/Excavation_PCA"
+tensorboard --logdir="./learning_to_simulate/models/Sand_20m_trained"
+
 # Train a model:
 python3 -m learning_to_simulate.train \
   --mode=train \
   --eval_split=train \
-  --data_path=./learning_to_simulate/datasets/Excavation/D0.1m_S0.15ms-1_A10.0deg_M1.0 \
-  --model_path=./learning_to_simulate/models/Excavation
-  # --option
+  --batch_size=2 \
+  --data_path=./learning_to_simulate/datasets/Excavation_PCA \
+  --model_path=./learning_to_simulate/models/Excavation_PCA
+
+python3 -m learning_to_simulate.train \
+  --mode=train \
+  --eval_split=train \
+  --batch_size=2 \
+  --data_path=./learning_to_simulate/datasets/Wheel_PCA \
+  --model_path=./learning_to_simulate/models/Wheel_PCA
+
+python3 -m learning_to_simulate.train \
+  --mode=train \
+  --eval_split=train \
+  --batch_size=2 \
+  --data_path=./learning_to_simulate/datasets/Excavation_SP/240_D0.1m_S0.1ms-1_A45.0deg_M2.0 \
+  --model_path=./learning_to_simulate/models/Excavation_SP \
+  --con_radius=0.03
 
 python3 -m learning_to_simulate.train \
   --mode=train \
   --eval_split=train \
   --data_path=./learning_to_simulate/datasets/Sand \
-  --model_path=./learning_to_simulate/models/Sand
+  --model_path=./learning_to_simulate/models/Sand \
+  --con_radius=0.015
 
 # Generate some trajectory rollouts on the test set:
-python -m learning_to_simulate.train \
+python3 -m learning_to_simulate.train \
   --mode=eval_rollout \
-  --data_path=./learning_to_simulate/datasets/ds_test/D0.1m_S0.1ms-1_A45.0deg_M2.0 \
-  --model_path=./learning_to_simulate/models/ds_test \
-  --output_path=./learning_to_simulate/rollouts/ds_test
-  # --option
+  --eval_split=test \
+  --data_path=./learning_to_simulate/datasets/Excavation_PCA \
+  --model_path=./learning_to_simulate/models/Excavation_PCA \
+  --output_path=./learning_to_simulate/rollouts/Excavation_PCA
+
+python3 -m learning_to_simulate.train \
+  --mode=eval_rollout \
+  --eval_split=test \
+  --data_path=./learning_to_simulate/datasets/Wheel_PCA \
+  --model_path=./learning_to_simulate/models/Wheel_PCA \
+  --output_path=./learning_to_simulate/rollouts/Wheel_PCA
+
+python3 -m learning_to_simulate.train \
+  --mode=eval_rollout \
+  --eval_split=train \
+  --data_path=./learning_to_simulate/datasets/Excavation_PCA/all/33_D0.02m_S0.1ms-1_A3.8deg_M1.0 \
+  --model_path=./learning_to_simulate/models/Excavation_PCA \
+  --output_path=./learning_to_simulate/rollouts/Excavation_PCA
+python3 -m learning_to_simulate.train \
+  --mode=eval_rollout \
+  --eval_split=train \
+  --data_path=./learning_to_simulate/datasets/Excavation_PCA/all/133_D0.05m_S0.1ms-1_A3.8deg_M1.0 \
+  --model_path=./learning_to_simulate/models/Excavation_PCA \
+  --output_path=./learning_to_simulate/rollouts/Excavation_PCA
+python3 -m learning_to_simulate.train \
+  --mode=eval_rollout \
+  --eval_split=train \
+  --data_path=./learning_to_simulate/datasets/Wheel_PCA/all/179_G9.81ms-2_S20perc_L164N_D30cm_A37deg \
+  --model_path=./learning_to_simulate/models/Wheel_PCA \
+  --output_path=./learning_to_simulate/rollouts/Wheel_PCA
+
+python3 -m learning_to_simulate.train \
+  --mode=eval_rollout \
+  --eval_split=train \
+  --data_path=./learning_to_simulate/datasets/Excavation_SP/240_D0.1m_S0.1ms-1_A45.0deg_M2.0 \
+  --model_path=./learning_to_simulate/models/Excavation_SP \
+  --output_path=./learning_to_simulate/rollouts/Excavation_SP \
+  --con_radius=0.025
+
+python3 -m learning_to_simulate.train \
+  --mode=eval_rollout \
+  --eval_split=test \
+  --data_path=./learning_to_simulate/datasets/Sand \
+  --model_path=./learning_to_simulate/models/Sand \
+  --output_path=./learning_to_simulate/rollouts/Sand \
+  --con_radius=0.015
 
 # Plot a trajectory:
-python -m learning_to_simulate.render_rollout \
-  --rollout_path=./learning_to_simulate/rollouts/ds_test/rollout_test_0.pkl
+# 2D
+python -m learning_to_simulate.render_rollout_2d_force \
+  --plane=xy \
+  --data_path=./learning_to_simulate/datasets/Excavation_PCA \
+  --rollout_path=./learning_to_simulate/rollouts/Excavation_PCA
+
+python -m learning_to_simulate.render_rollout_2d_force \
+  --plane=xy \
+  --data_path=./learning_to_simulate/datasets/Wheel_PCA \
+  --rollout_path=./learning_to_simulate/rollouts/Wheel_PCA
+
+python -m learning_to_simulate.render_rollout_original \
+  --rollout_path=./learning_to_simulate/rollouts/Sand/rollout_train_0.pkl
+
+# 3D
+python -m learning_to_simulate.render_rollout_3d_force \
+  --fullspace=True \
+  --data_path=./learning_to_simulate/datasets/Excavation_PCA \
+  --rollout_path=./learning_to_simulate/rollouts/Excavation_PCA/rollout_test_0.pkl
+
+python -m learning_to_simulate.render_rollout_3d_force \
+  --fullspace=True \
+  --data_path=./learning_to_simulate/datasets/Wheel_PCA \
+  --rollout_path=./learning_to_simulate/rollouts/Wheel_PCA/rollout_test_0.pkl
 
 
 # Venv -------------------------------------------------------------------------
@@ -77,15 +266,16 @@ python -m learning_to_simulate.render_rollout \
 
 # Remotely control OS Grub boot ------------------------------------------------
 (via Chrome Remote Desktop OR Team Viewer)
-$ sudo grub-reboot 2 && sudo reboot
+$ sudo grub-reboot 2 && sudo reboot [for CPU/GPU Concordia]
 $ sudo grub-reboot NUMBER && sudo reboot
 To see NUMBER (starts from 0):
+$ awk -F\' '/menuentry / {print $2}' /boot/grub/grub.cfg 
+OR
 $ sudo add-apt-repository ppa:danielrichter2007/grub-customizer
 $ sudo apt update
 $ sudo apt install grub-customizer
 $ grub-customizer
-OR
-$ awk -F\' '/menuentry / {print $2}' /boot/grub/grub.cfg 
+
 If required see this:
 https://www.trishtech.com/2017/09/quickly-add-windows-10-to-grub-menu-after-installing-ubuntu/
 
@@ -96,6 +286,8 @@ $ xrandr --newmode STRING
 Find display NAME (e.g. VGA1, DVI-I-1) by running $ xrandr
 $ xrandr --addmode DVI-I-1 "1536x960_60.00"
 
+Copy and paste:
+$ sudo chmod -R 777 DIR_ADDRESS
 
 # Login NAS --------------------------------------------------------------------
 1. In terminal:
@@ -117,7 +309,7 @@ $ sudo apt-get install -y python3-dev git build-essential cmake make g++ libx11-
 $ sudo -H pip3 install numpy scipy pybind11 Flask flask_cors gitpython yapf psutil pyqt5==5.14.0
 $ wget https://raw.githubusercontent.com/yuanming-hu/taichi/legacy/install.py
 $ sudo -H python3 install.py
-$ source  ~/.bashrc
+$ source ~/.bashrc
 Create a file called taichi and replace the current taichi with it!
 $ sudo rm -R taichi
 # $ sudo chown -R "$USER":"$USER" ~/.local/lib
@@ -129,9 +321,6 @@ $ ti build
 # $ sudo chown $USER -R taichi
 If required:
   $ sudo rm -R taichi
-Build with Double Precision (64 bit) Float Point (debugging required e.g. POT):
-  $ export TC_USE_DOUBLE=1
-  $ ti build
 
 
 # Houdini tips -----------------------------------------------------------------
@@ -265,6 +454,7 @@ ti build
 # results:
 cd /private/k/kskoniec/a_hae/taichi/outputs/mpm/
 rsync -avzhe ssh a_hae@speed-submit.encs.concordia.ca:/private/k/kskoniec/a_hae/taichi/outputs/mpm/tcFlow /Volumes/X
+rsync -avzhe ssh a_hae@speed-submit.encs.concordia.ca:/private/k/kskoniec/a_hae/deep_granular_flows/learning_to_simulate/rollouts/Excavation /Volumes/X
 
 singularity exec -H /private/k/kskoniec/a_hae ubuntu.simg python3 /private/k/kskoniec/a_hae/taichi/projects/mpm/scripts/mls-cpic/tcFlow.py
 singularity run -H /private/k/kskoniec/a_hae ubuntu.simg source ~/.bashrc
