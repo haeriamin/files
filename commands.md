@@ -1,16 +1,182 @@
-## PySpark --------------------------------------------------------------------
-# Setup
-Set a python venv
-pip install pyspark 
-# Run
-spark-submit file_name.py 
+### Crypto --------------------------------------------------------------------
+## Plan 
+<CURRENT>
+- Simulate with 100 shares
+  - Get simulation data (after training data)
+
+- Get coin data correctly with volume and marketcap
+- Research different GNNs
+- Learn trading via CoinBase
+  - Get driver's license
+
+<NEXT>
+- Deploy
+  - Manual (every day): Predict, Buy/Sell/Hold, Retrain (continual learning to avoid model drift)
+  - Automatic: Flask, Docker/Kubernetes, Local/cloud cluster
+    - https://towardsdatascience.com/how-to-apply-continual-learning-to-your-machine-learning-models-4754adcd7f7f
+
+<OPTIONAL>
+- Implement XGB to detect data drift (train vs real-world)
+- Find cloud gpu and cluster or Buy PC
+- Use DTW (instead of XCorr)
+
+
+## Conda 
+Install miniconda for python 3.8
+conda info
+conda update conda
+conda create --name crypto_conda_env
+conda activate crypto_conda_env
+conda env list
+conda list
+conda deactivate
+conda install ***
+OR
+conda install pip
+/Users/aminhaeri/opt/miniconda3/envs/crypto_conda_env/bin/pip install -r req_1.txt
+/Users/aminhaeri/opt/miniconda3/envs/crypto_conda_env/bin/pip install fastdtw
+tensorboard --logdir="./logs"
 
 
 ### UChicago ---------------------------------------------------------------
+# Plan
+  - Check director field stats (how a node direction changes in time)
+  - Predict angles directly 
+    - Check node and edge features (should be angles not their change)
+  - Increase batch size
+  - Check connectivity radius
+  - Find relationship between modes
+  - 
+  - Detect half integer point defects and learn their movements
+
+# SSH
 ssh -Y haeri@midway2.rcc.uchicago.edu
-scp -r /Volumes/X/Postdoc/Code/LC_Code_0 haeri@midway2.rcc.uchicago.edu:  # To copy
+
+cd /project2/depablo/ming/active_nematics_for_Amin/Subspace_Graph_Liquid_Crystal/
+
+scp -r haeri@midway2.rcc.uchicago.edu:/project2/depablo/ming/active_nematics_for_Amin/Subspace_Graph_Liquid_Crystal/learning_to_simulate/models/LiquidCrystal_PCA/ /Volumes/X/DeepLiquidCrystals/learning_to_simulate/models/LiquidCrystal_PCA/
+
+tensorboard --logdir="./learning_to_simulate/models/LiquidCrystal_PCA" 
+
+## ML Code
+# To copy
+scp -r /Volumes/X/Subspace_Graph_Liquid_Crystal/ haeri@midway2.rcc.uchicago.edu:
+# Docker
+docker build ./ -f Dockerfile -t tf1gpu
+docker save tf1gpu | gzip > tf1gpu.tar.gz
+scp -r /Volumes/X/Subspace_Graph_Liquid_Crystal/docker/tf1gpu.tar.gz haeri@midway2.rcc.uchicago.edu:
+scp -r /Volumes/X/Subspace_Graph_Liquid_Crystal/docker/Dockerfile haeri@midway2.rcc.uchicago.edu:
+scp -r /Volumes/X/Subspace_Graph_Liquid_Crystal/docker/Singularity.def haeri@midway2.rcc.uchicago.edu:
+
+scp -r haeri@midway2.rcc.uchicago.edu:/project2/depablo/ming/active_nematics_for_Amin/Subspace_Graph_Liquid_Crystal/learning_to_simulate/datasets/LiquidCrystal_PCA/ /Volumes/X/DeepLiquidCrystals/learning_to_simulate/datasets/LiquidCrystal_PCA
+
+
+scp -r /Volumes/X/DeepLiquidCrystals/learning_to_simulate/datasets/LiquidCrystal_PCA haeri@midway2.rcc.uchicago.edu:/project2/depablo/ming/active_nematics_for_Amin/Subspace_Graph_Liquid_Crystal/learning_to_simulate/datasets/
+
+singularity build tf1gpu.simg docker-archive://tf1gpu.tar.gz
+--OR (Locally) --
+pip3 install spython
+spython recipe Dockerfile &> Singularity.def
+singularity build tf1gpu.simg Singularity.def <NOT POSSIBLE on SSH>
+singularity build tf1gpu.simg Dockerfile <NOT POSSIBLE on SSH>
+# On SSH
+cd /project2/depablo/ming/active_nematics_for_Amin/Subspace_Graph_Liquid_Crystal/
+du -sh ***  # check file size
+midway2: module load cuda/10.1
+midway3: module load cuda/10.2
+mv ./nematics_3d/ /project2/depablo/ming/active_nematics_for_Amin/nematics_3d/
+module load singularity
+# To check modules
+  module avail ***
+  module list
+# To zip on mac/ubuntu:
+  tar cvfz NAME.tar.gz NAME
+# To unzip:
+  tar -zxvf NAME.tar.gz
+# To see the used space:
+  du -msh .
+  du -m .
+
+# commands
+ssh -Y haeri@midway2.rcc.uchicago.edu
+cd /project2/depablo/ming/active_nematics_for_Amin/Subspace_Graph_Liquid_Crystal/
+cat 1_data_b.err
+cat 1_data_b.out
+cat 3_train.err
+
+module load singularity
+module load cuda/10.0
+
+sbatch ./run_data_1.sh
+sbatch ./run_data_2.sh
+sbatch ./run_train.sh
+squeue --user=haeri
+scancel 21875067
+rcchelp usage --byjob
+rcchelp qos
+
+# Generate PCA loading vector
+singularity exec -H /project2/depablo/ming/active_nematics_for_Amin/Subspace_Graph_Liquid_Crystal ./tf1gpu.simg python -m subspace_data.1_pca_matrix
+# Generate TFRecords
+singularity exec -H /project2/depablo/ming/active_nematics_for_Amin/Subspace_Graph_Liquid_Crystal ./tf1gpu.simg python -m subspace_data.2_run_tfrecord_pca
+# Train
+singularity exec -H /project2/depablo/ming/active_nematics_for_Amin/Subspace_Graph_Liquid_Crystal ./tf1gpu.simg python -m learning_to_simulate.train \
+--mode=train \
+--eval_split=train \
+--batch_size=2 \
+--data_path=./learning_to_simulate/datasets/LiquidCrystal_PCA \
+--model_path=./learning_to_simulate/models/LiquidCrystal_PCA
+# Generate sims
+python3 -m learning_to_simulate.train \
+--mode=eval_rollout \
+--eval_split=train \
+--data_path=./learning_to_simulate/datasets/LiquidCrystal_PCA_8 \
+--model_path=./learning_to_simulate/models/LiquidCrystal_PCA_8 \
+--output_path=./learning_to_simulate/rollouts/LiquidCrystal_PCA_8
+
+python3 -m learning_to_simulate.train \
+--mode=eval_rollout \
+--eval_split=test \
+--data_path=./learning_to_simulate/datasets/LiquidCrystal_PCA \
+--model_path=./learning_to_simulate/models/LiquidCrystal_PCA \
+--output_path=./learning_to_simulate/rollouts/LiquidCrystal_PCA
+
+# Plot 2D
+python -m learning_to_simulate.render_rollout_2d \
+  --data_path=./learning_to_simulate/datasets/LiquidCrystal_PCA_8 \
+  --rollout_path=./learning_to_simulate/rollouts/LiquidCrystal_PCA_8/rollout_train_4.pkl \
+  --load=True
+
+python -m learning_to_simulate.render_rollout_2d \
+  --data_path=./learning_to_simulate/datasets/LiquidCrystal_PCA \
+  --rollout_path=./learning_to_simulate/rollouts/LiquidCrystal_PCA/rollout_test_0.pkl \
+  --load=True
+  
+# Plot 3D
+python -m learning_to_simulate.render_rollout_3d \
+  --fullspace=True \
+  --data_path=./learning_to_simulate/datasets/LiquidCrystal_PCA_8 \
+  --rollout_path=./learning_to_simulate/rollouts/LiquidCrystal_PCA_8/rollout_test_0.pkl
+# Tensorboard
+tensorboard --logdir="./learning_to_simulate/models/LiquidCrystal_PCA_8"
+# Video
+ffmpeg -framerate 100 -i ./learning_to_simulate/rollouts/LiquidCrystal_PCA_8/rollout_train_4/f%d.png -c:v libx264 -profile:v high -crf 18 -pix_fmt yuv420p output.mp4
+
+# Info
+Activity level: z in code, alpha in paper
+Input/Outut: only director field is used as input and output (Fig 5; no order parameter S or velocity field v)
+Loss function: 1 - |<n, n_hat>| (dot product)
+Time evolution network on 3D data?
+# Local
+install partio from github
+python partio_generator
+Houdini
+# 2x slower (dt=1e-4, t_max=10sec, freq=100Hz)
+ffmpeg -framerate 50 -i untitled%d.jpg -c:v libx264 -profile:v high -crf 18 -pix_fmt yuv420p output.mp4
 
 ## MPI C Code
+# To copy
+scp -r /Volumes/X/Postdoc/Code/LC_Code_0 haeri@midway2.rcc.uchicago.edu:
 # For running
 module load openmpi/2.0.1
 module load intel/16.0
@@ -25,12 +191,13 @@ export PATH=$PATH:$HOME/opt/usr/local/bin
 export PATH=$PATH:$HOME/opt/usr/local/bin/mpicc
 export TMPDIR=~/tmp
 
-## ML Code
-install partio from github
-python partio_generator
-Houdini
-# 2x slower (dt=1e-4, t_max=10sec, freq=100Hz)
-ffmpeg -framerate 50 -i untitled%d.jpg -c:v libx264 -profile:v high -crf 18 -pix_fmt yuv420p output.mp4
+
+## PySpark --------------------------------------------------------------------
+# Setup
+Set a python venv
+pip install pyspark 
+# Run
+spark-submit file_name.py 
 
 
 ## PhD Thesis Concordia -------------------------------------------------------
@@ -256,7 +423,7 @@ python -m learning_to_simulate.render_rollout_3d_force \
 # Ubuntu:
   $ sudo apt install python3-venv
 # Mac
-1. Create venv in project dir: $ python3 -m venv ./venv
+1. Create venv in project dir: $ /usr/local/bin/python3.7 -m venv ./venv
 2. Activate venv $ source ./venv/bin/activate
 3. Update pip: $ pip install --upgrade pip
 4. Install venv pip packages: $ pip install -r requirements.txt
@@ -550,17 +717,3 @@ In MVS:
   - RightClick->Build
   - RightClick->Set as StartUp Project
   - Run
-
-# Tax 2018 ---------------------------------------------------------------------
-# Promissed:
-Federal: 
-  federal tax return: 0
-  GST tax credit: 864 (= 284 + 580)
-
-Quebec:  
-  Quebec tax return: 100.26
-  Quebec Solidarity tax credit: 1271
-
-# Received:
-Federal: 1361.5 (= 140 + 290 + 641.5 + 145 + 145)
-Quebec:  100.26
